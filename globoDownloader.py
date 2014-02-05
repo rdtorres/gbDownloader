@@ -1,18 +1,3 @@
-'''
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-    
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-'''
 import urllib2
 import shutil
 import urlparse
@@ -42,7 +27,7 @@ class GloboDownloader:
     def download_native(self, url, fileName):
         print self.plugin.get_setting('download_command') % (fileName, url)
         retCode = subprocess.call(self.plugin.get_setting('download_command') % (fileName, url)  , shell=True)
-        if retCode != 0:
+        if retCode != 0 or not os.path.exists(fileName):
             print 'Error downloading file %s to %s' % (url, fileName )
             raise Exception('Error downloading file %s to %s' % (url, fileName ))
         return fileName
@@ -98,7 +83,10 @@ class GloboDownloader:
         kwargs = {
             'uri': uri,
             'rail': rail,
-            'page': page
+            'page': page,
+            'timeout': 10,
+            'retries': 10
+
         }
         
         print '%-55s ==> %10s' % ('[VIDEO TITLE]','[VIDEO ID]')
@@ -116,7 +104,9 @@ class GloboDownloader:
         kwargs = {
             'uri': uri,
             'rail': rail,
-            'page': 1
+            'page': 1,
+            'timeout': 10,
+            'retries': 10
         }
         
         programs = self.api.get_rail_videos(**kwargs)
@@ -149,6 +139,7 @@ class GloboDownloader:
                 if os.path.exists(dowloadVideoPartFile):
                     print 'Deleting partial downloaded file %s' % ( dowloadVideoPartFile )
                     os.remove(dowloadVideoPartFile)
+                raise
         return videoPartsFiles
 
     def combineVideoParts(self,outputFile,videos):
